@@ -1,0 +1,12 @@
+{
+  "autoload": {
+    "psr-4": {
+      "SSF\\MicroFramework\\": "src"
+    }
+  },
+  "require": {
+    "psr/container": "^2.0",
+    "psr/log": "^3.0",
+    "psr/cache": "^3.0"
+  }
+}
