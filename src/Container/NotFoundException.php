@@ -1,6 +1,6 @@
 <?php
 
-namespace SSF\MicroFramework\Dependency;
+namespace SSF\MicroFramework\Container;
 
 use Psr\Container\NotFoundExceptionInterface;
 use RuntimeException;

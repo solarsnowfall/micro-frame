@@ -3,10 +3,11 @@
 namespace SSF\MicroFramework\Facades;
 
 use Psr\Container\ContainerInterface;
+use SSF\MicroFramework\Application;
 
 abstract class Facade
 {
-    private static ContainerInterface $container;
+    private static Application $application;
 
     private static array $instance = [];
 
@@ -17,19 +18,18 @@ abstract class Facade
         return static::resolveInstance()->$name(...$arguments);
     }
 
-    public static function setContainer(ContainerInterface $container): void
-    {
-        static::$container = $container;
-    }
-
     private static function resolveInstance()
     {
+        if (!isset(static::$application)) {
+            static::$application = Application::getInstance();
+        }
+
         $name = static::instanceName();
 
         if (!isset(static::$instance[$name])) {
-            static::$instance[$name] = static::$container->get($name);
+            static::$instance[$name] = static::$application->get($name);
         }
 
-        return static::$container->get($name);
+        return static::$application->get($name);
     }
 }

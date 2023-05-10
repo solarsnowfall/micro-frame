@@ -2,21 +2,52 @@
 
 namespace SSF\MicroFramework;
 
-use Psr\Container\ContainerInterface;
-use SSF\MicroFramework\Facades\Facade;
+use Closure;
+use SSF\MicroFramework\Container\Container;
+use SSF\MicroFramework\Services\Provider;
+use SSF\MicroFramework\Traits\Singleton;
 
-class Application
+class Application extends Container
 {
-    private static self $application;
+    use Singleton;
 
     public function __construct(
-        private ContainerInterface $container
-    ) {}
+        protected string $path
+    ) {
+        static::setInstance($this);
+    }
 
-    public static function initialize(ContainerInterface $container): void
+    public function run(): void
     {
-        static::$application = new Application($container);
+        $this->registerServices();
+    }
 
-        Facade::setContainer(static::$application->container);
+    public function bind(string $class, Closure|array $definition = []): void
+    {
+        $this->set($class, $definition);
+    }
+
+    public function singleton(string $class, Closure|array $definition = []): void
+    {
+        $this->set($class, $definition, true);
+    }
+
+    /**
+     * @return Application
+     */
+    public static function getInstance(): Application
+    {
+        return static::$instance;
+    }
+
+    protected function registerServices(): void
+    {
+        foreach (Provider::register() as $id => $definition) {
+            $this->bind($id, $definition);
+        }
+
+        foreach (Provider::registerSingleton() as $id => $definition) {
+            $this->singleton($id, $definition);
+        }
     }
 }

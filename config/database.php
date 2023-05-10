@@ -1,13 +1,13 @@
 <?php
 
-use SSF\MicroFramework\Config\Env;
+use SSF\MicroFramework\Config\Environment;
 
 return [
     'mysql' => [
-        'host' => Env::get('MYSQL_HOSTNAME'),
-        'username' => Env::get('MYSQL_USERNAME'),
-        'password' => Env::get('MYSQL_PASSWORD'),
-        'database' => Env::get('MYSQL_DATABASE'),
-        'port' => Env::get('MYSQL_PORT')
+        'host' => Environment::get('MYSQL_HOSTNAME'),
+        'username' => Environment::get('MYSQL_USERNAME'),
+        'password' => Environment::get('MYSQL_PASSWORD'),
+        'database' => Environment::get('MYSQL_DATABASE'),
+        'port' => Environment::get('MYSQL_PORT')
     ]
 ];

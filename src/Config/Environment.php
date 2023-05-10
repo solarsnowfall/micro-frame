@@ -4,15 +4,26 @@ namespace SSF\MicroFramework\Config;
 
 use InvalidArgumentException;
 use SplFileObject;
+use SSF\MicroFramework\Traits\Singleton;
 
-class Env
+class Environment
 {
+    use Singleton;
+
     public function __construct(
         private string $filename
     ) {
         if (!file_exists($this->filename)) {
             throw new InvalidArgumentException(sprintf('Unable to access env file: %s', $this->filename));
         }
+
+        static::setInstance($this);
+    }
+
+    public static function setup(string $filename): void
+    {
+        $env = new Environment($filename);
+        $env->loadVars();
     }
 
     /**
@@ -26,6 +37,9 @@ class Env
         return $value !== false ? $value : $default;
     }
 
+    /**
+     * @return void
+     */
     public function loadVars(): void
     {
         $lines = file($this->filename, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);

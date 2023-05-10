@@ -2,13 +2,10 @@
 
 include 'vendor/autoload.php';
 
-use SSF\MicroFramework\Config\Env;
-use SSF\MicroFramework\Dependency\Container;
+use SSF\MicroFramework\Config\Environment;
 use SSF\MicroFramework\Application;
 
-$env = new Env(__DIR__ . '/.env');
-$env->loadVars();
+Environment::setup(__DIR__ . '/.env');
 
-$container = new Container(include __DIR__ . '/services/definitions.php');
-
-Application::initialize($container);
+$application = new Application(__DIR__);
+$application->run();
