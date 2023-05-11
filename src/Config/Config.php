@@ -21,12 +21,22 @@ class Config
         $this->loadConfigFiles();
     }
 
-    public function get(string $key)
+    /**
+     * @param string $key
+     * @param mixed|null $default
+     * @return mixed|null
+     */
+    public function get(string $key, mixed $default = null): mixed
     {
         $keyArray = explode('.', $key);
-        return $this->getDeep($keyArray, $this->config);
+        return $this->getDeep($keyArray, $this->config) ?? $default;
     }
 
+    /**
+     * @param array $keyArray
+     * @param array $config
+     * @return mixed
+     */
     private function getDeep(array $keyArray, array $config): mixed
     {
         $key = array_shift($keyArray);
@@ -42,6 +52,9 @@ class Config
         return $config[$key];
     }
 
+    /**
+     * @return void
+     */
     private function loadConfigFiles(): void
     {
         $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->directory));

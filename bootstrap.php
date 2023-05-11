@@ -9,3 +9,5 @@ Environment::setup(__DIR__ . '/.env');
 
 $application = new Application(__DIR__);
 $application->run();
+
+return $application;

@@ -94,7 +94,7 @@ class ArrayCache extends AbstractAdapter implements CacheInterface
     private function purgeExpired(): void
     {
         foreach (array_keys($this->store) as $key) {
-            if (time() > $this->expiration[$key]) {
+            if ($this->expiration[$key] && time() > $this->expiration[$key]) {
                 unset($this->store[$key], $this->expiration[$key]);
             }
         }
