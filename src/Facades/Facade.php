@@ -20,16 +20,18 @@ abstract class Facade
 
     private static function resolveInstance()
     {
+        $name = static::instanceName();
+
         if (!isset(static::$application)) {
             static::$application = Application::getInstance();
         }
 
-        $name = static::instanceName();
-
         if (!isset(static::$instance[$name])) {
-            static::$instance[$name] = static::$application->get($name);
+            static::$instance[$name] = $name !== Application::class
+                ? static::$application->get($name)
+                : static::$application;
         }
 
-        return static::$application->get($name);
+        return static::$instance[$name];
     }
 }
