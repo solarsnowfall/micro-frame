@@ -1,6 +1,6 @@
 <?php
 
-namespace SSF\MicroFramework\Cache;
+namespace SSF\MicroFramework\Cache\Exception;
 
 use InvalidArgumentException as InvalidArgException;
 use Psr\SimpleCache\InvalidArgumentException;

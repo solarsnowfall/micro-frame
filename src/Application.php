@@ -11,25 +11,41 @@ class Application extends Container
 {
     use Singleton;
 
+    /**
+     * @param string $path
+     */
     public function __construct(
-        protected string $path
+        protected readonly string $path
     ) {
         static::setInstance($this);
     }
 
+    /**
+     * @return void
+     */
     public function run(): void
     {
         $this->registerServices();
     }
 
-    public function bind(string $class, Closure|array $definition = []): void
+    /**
+     * @param string $class
+     * @param mixed $definition
+     * @return void
+     */
+    public function bind(string $class, mixed $definition = []): void
     {
-        $this->set($class, $definition);
+        $this->register($class, $definition);
     }
 
-    public function singleton(string $class, Closure|array $definition = []): void
+    /**
+     * @param string $class
+     * @param mixed $definition
+     * @return void
+     */
+    public function singleton(string $class, mixed $definition = []): void
     {
-        $this->set($class, $definition, true);
+        $this->register($class, $definition, true);
     }
 
     /**
@@ -40,6 +56,9 @@ class Application extends Container
         return static::$instance;
     }
 
+    /**
+     * @return void
+     */
     protected function registerServices(): void
     {
         foreach (Provider::register() as $id => $definition) {

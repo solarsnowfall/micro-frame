@@ -4,13 +4,24 @@ namespace SSF\MicroFramework\Support;
 
 class Arr
 {
-    public static function isAssoc(array $array): bool
+    public static function anyEmpty(array $array): bool
     {
-        return !static::isIndexed($array);
+        foreach (array_keys($array) as $key) {
+            if (empty($array[$key])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    public static function isIndexed(array $array): bool
+    public static function isAssoc(array $array): bool
     {
-        return $array === [] || $array === range(0, count($array) -1);
+        return ! static::isSequential($array);
+    }
+
+    public static function isSequential(array $array): bool
+    {
+        return $array === [] || array_keys($array) === range(0, count($array) -1);
     }
 }

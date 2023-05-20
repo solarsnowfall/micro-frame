@@ -4,7 +4,7 @@ namespace SSF\MicroFramework\Cache\Adapter;
 
 use DateInterval;
 use DateTime;
-use SSF\MicroFramework\Cache\InvalidCacheKeyException;
+use SSF\MicroFramework\Cache\Exception\InvalidCacheKeyException;
 
 class AbstractAdapter
 {

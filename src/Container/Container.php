@@ -11,18 +11,35 @@ use SSF\MicroFramework\Support\Arr;
 
 class Container implements ContainerInterface
 {
+    /**
+     * @var array
+     */
     protected array $bindings = [];
 
+    /**
+     * @var array
+     */
     protected array $instances = [];
 
+    /**
+     * @var array
+     */
     protected array $singletons = [];
 
+    /**
+     * @param string $id
+     * @return bool
+     */
     public function has(string $id): bool
     {
         return isset($this->bindings[$id]);
     }
 
-    public function get(string $id)
+    /**
+     * @param string $id
+     * @return mixed
+     */
+    public function get(string $id): mixed
     {
         if (! $this->has($id)) {
             throw new NotFoundException("Service not found: $id");
@@ -41,19 +58,20 @@ class Container implements ContainerInterface
         return $instance;
     }
 
-    private function resolve(string $id, array|Closure $bindings)
+    /**
+     * @param string $id
+     * @param mixed $bindings
+     * @param bool $singleton
+     * @return void
+     */
+    public function register(string $id, mixed $bindings, bool $singleton = false): void
     {
-        if ($bindings instanceof Closure) {
-            return $bindings($this);
-        } elseif (class_exists($id)) {
-            return $this->make($id, $bindings);
+        if (!is_object($bindings) && !is_array($bindings)) {
+            throw new InvalidArgumentException(
+                'A binding must be a Closure, a class instance or an array'
+            );
         }
 
-        return $bindings;
-    }
-
-    public function set(string $id, Closure|array|null $bindings, bool $singleton = false): void
-    {
         $this->bindings[$id] = $bindings;
 
         if ($singleton) {
@@ -61,6 +79,10 @@ class Container implements ContainerInterface
         }
     }
 
+    /**
+     * @param string $id
+     * @return void
+     */
     public function drop(string $id): void
     {
         unset(
@@ -70,44 +92,32 @@ class Container implements ContainerInterface
         );
     }
 
-    private function make(string $class, array $bindings = []): mixed
+
+    /**
+     * @param string $class
+     * @param array $parameters
+     * @return mixed
+     */
+    public function make(string $class, array $parameters = []): mixed
     {
-        $reflector = new ReflectionClass($class);
-
-        if (! $reflector->hasMethod('__construct')) {
-            return $reflector->newInstance();
-        }
-
-        return $reflector->newInstanceArgs(
-            $this->resolveInstanceArguments($reflector, $bindings)
-        );
+        return new $class(...$parameters);
     }
 
-    private function makeSingleton(string $class, array $bindings): mixed
+    /**
+     * @param string $id
+     * @param mixed $bindings
+     * @return mixed
+     */
+    private function resolve(string $id, mixed $bindings): mixed
     {
-        if (! isset($this->instances[$class])) {
-            $this->instances[$class] = $this->make($class, $bindings);
+        if (is_object($bindings)) {
+            return $bindings instanceof Closure ? $bindings($this) : $bindings;
         }
 
-        return $this->instances[$class];
-    }
-
-    private function resolveInstanceArguments(ReflectionClass $reflector, array $bindings): array
-    {
-        $arguments = [];
-        $isAssoc = Arr::isAssoc($bindings);
-
-        foreach ($reflector->getConstructor()->getParameters() as $parameter) {
-            $key = $isAssoc ? $parameter->getName() : count($arguments);
-            if (isset($bindings[$key])) {
-                $arguments[] = $bindings[$key];
-            } elseif ($parameter->isDefaultValueAvailable()) {
-                $arguments[] = $parameter->getDefaultValue();
-            } else {
-                $arguments[] = null;
-            }
+        if (class_exists($id)) {
+            return $this->make($id, $bindings);
         }
 
-        return $arguments;
+        return $bindings;
     }
 }

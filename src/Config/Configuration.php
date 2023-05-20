@@ -7,15 +7,17 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
-class Config
+class Configuration
 {
-    private array $config = [];
+    private array $definitions = [];
 
     public function __construct(
-        private string $directory
+        private readonly string $directory
     ) {
         if (!file_exists($this->directory)) {
-            throw new InvalidArgumentException(sprintf('Config directory not found: %s', $this->directory));
+            throw new InvalidArgumentException(
+                sprintf('Configuration directory not found: %s', $this->directory)
+            );
         }
 
         $this->loadConfigFiles();
@@ -29,27 +31,27 @@ class Config
     public function get(string $key, mixed $default = null): mixed
     {
         $keyArray = explode('.', $key);
-        return $this->getDeep($keyArray, $this->config) ?? $default;
+        return $this->getDeep($keyArray, $this->definitions) ?? $default;
     }
 
     /**
      * @param array $keyArray
-     * @param array $config
-     * @return mixed
+     * @param array $definition
+     * @return array|null
      */
-    private function getDeep(array $keyArray, array $config): mixed
+    private function getDeep(array $keyArray, array $definition): mixed
     {
         $key = array_shift($keyArray);
 
-        if (!isset($config[$key]) || !empty($keyArray) && !is_array($config[$key])) {
+        if (!isset($definition[$key]) || !empty($keyArray) && !is_array($definition[$key])) {
             return null;
         }
 
-        if (is_array($config[$key])) {
-            return $this->getDeep($keyArray, $config[$key]);
+        if (is_array($definition[$key])) {
+            return $this->getDeep($keyArray, $definition[$key]);
         }
 
-        return $config[$key];
+        return $definition[$key];
     }
 
     /**
@@ -57,7 +59,9 @@ class Config
      */
     private function loadConfigFiles(): void
     {
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->directory));
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($this->directory)
+        );
 
         /** @var SplFileInfo $fileInfo */
         foreach ($iterator as $fileInfo) {
@@ -67,7 +71,7 @@ class Config
             }
 
             $key = substr($fileInfo->getFilename(), 0, -4);
-            $this->config[$key] = include $fileInfo->getPathname();
+            $this->definitions[$key] = include $fileInfo->getPathname();
         }
     }
 }

@@ -2,9 +2,12 @@
 
 namespace SSF\MicroFramework\Services;
 
-use SSF\MicroFramework\Cache\Cache;
-use SSF\MicroFramework\Config\Config;
+use SSF\MicroFramework\Cache\Adapter\FileCache;
+use SSF\MicroFramework\Cache\Storage;
+use SSF\MicroFramework\Config\Configuration;
 use SSF\MicroFramework\Config\Environment;
+use SSF\MicroFramework\Facades\App;
+use SSF\MicroFramework\Facades\Config;
 
 class Provider
 {
@@ -16,10 +19,12 @@ class Provider
     public static function registerSingleton(): array
     {
         return [
-            Config::class => ['directory' => __DIR__ . '/../../config'],
-            Cache::class => function() {
-                $interface = \SSF\MicroFramework\Facades\Config::get('cache.' . Environment::get('CACHE_ENGINE'));
-                return new Cache(new $interface);
+            Configuration::class => ['directory' => __DIR__ . '/../../config'],
+            FileCache::class => ['path' => __DIR__ . '/../../cache'],
+            Storage::class => function() {
+                return new Storage(
+                    App::get(Config::get('cache.' . Environment::get('CACHE_ENGINE')))
+                );
             }
         ];
     }
