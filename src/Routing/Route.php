@@ -2,9 +2,85 @@
 
 namespace SSF\MicroFramework\Routing;
 
+use Closure;
 use InvalidArgumentException;
+use Psr\Http\Message\RequestInterface;
 
 class Route
+{
+    protected array $arguments = [];
+
+    protected bool $matched = false;
+
+    public function __construct(
+        private readonly string $name,
+        private readonly string $path,
+        private readonly mixed $handler
+    ) {}
+
+    public function match(string $path): bool
+    {
+        if ([] !== $matches = $this->patternMatches($this->getRoutePattern(), $path)) {
+
+            $values = array_filter($matches, fn($key) => is_string($key), ARRAY_FILTER_USE_KEY);
+
+            foreach ($values as $key => $value) {
+                $this->arguments[$key] = $value;
+            }
+
+            return $this->matched = true;
+        }
+
+        return false;
+    }
+
+    public function invokeHandler(RequestInterface $request)
+    {
+        if (is_string($this->handler)) {
+            return $this->handler;
+        }
+
+         if ($this->handler instanceof Closure) {
+             return call_user_func($this->handler, $request);
+         }
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getParameters(): array
+    {
+        preg_match_all('/{[^}]*}/', $this->path, $matches);
+        return reset($matches) ?? [];
+    }
+
+    public function getRoutePattern(): string
+    {
+        $pattern = $this->path;
+
+        foreach ($this->getParameters() as $parameter) {
+            $search = trim($parameter, '{\}');
+            $pattern = str_replace($parameter, '(?P<' . $search . '>[^/]++)', $pattern);
+        }
+
+        return $pattern;
+    }
+
+    public static function formatPath(string $path): string
+    {
+        return DIRECTORY_SEPARATOR . trim($path, DIRECTORY_SEPARATOR);
+    }
+
+    private function patternMatches(string $pattern, string $path): array
+    {
+        preg_match('#^' . $pattern . '$#sD', $path, $matches);
+        return $matches;
+    }
+}
+
+class RouteB
 {
     /**
      * @var string
@@ -127,7 +203,7 @@ class Route
             return [];
         }
 
-        preg_match('#^' . $pattern . '$#sD', static::trimPath($pattern), $matches);
+        preg_match('#^' . $pattern . '$#sD', static::trimPath($path), $matches);
         return $matches;
     }
 }

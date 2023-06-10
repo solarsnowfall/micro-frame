@@ -8,12 +8,21 @@ use SSF\MicroFramework\Config\Configuration;
 use SSF\MicroFramework\Config\Environment;
 use SSF\MicroFramework\Facades\App;
 use SSF\MicroFramework\Facades\Config;
+use SSF\MicroFramework\Http\Request;
 
 class Provider
 {
     public static function register(): array
     {
-        return [];
+        return [
+            Request::class => [
+                'query' => $_GET,
+                'post' => $_POST,
+                'cookies' => $_COOKIE,
+                'files' => $_FILES,
+                'server' => $_SERVER
+            ]
+        ];
     }
 
     public static function registerSingleton(): array

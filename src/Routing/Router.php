@@ -3,47 +3,53 @@
 namespace SSF\MicroFramework\Routing;
 
 use Closure;
+use Psr\Http\Message\RequestInterface;
 use SSF\MicroFramework\Controller;
 
 abstract class Router
 {
     /**
-     * @var Controller[]|Closure[]
+     * @var Route[][]
      */
-    protected array $handlers = [];
+    protected array $routes = [];
 
-    /**
-     * @param string $route
-     * @param Controller|Closure $handler
-     * @return void
-     */
-    public function bind(string $route, Controller|Closure $handler): void
+    public function dispatch(RequestInterface $request)
     {
-        $route = static::formatRoute($route);
-        $this->handlers[$route] = $handler;
+        if (null !== $route = $this->matchRequest($request)) {
+            return $route->invokeHandler($request);
+        }
+
+
     }
 
     /**
-     * @param string $route
-     * @return bool
+     * @param string $method
+     * @param string $path
+     * @return Route|null
      */
-    public function has(string $route): bool
+    public function match(string $method, string $path): ?Route
     {
-        return $this->find($route) !== null;
+        foreach ($this->routes[$method] as $route) {
+            if ($route->match($path)) {
+                return $route;
+            }
+        }
+
+        return null;
     }
 
-    /**
-     * @param string $route
-     * @return Closure|Controller|null
-     */
-    public function find(string $route): Closure|Controller|null
+    public function matchRequest(RequestInterface $request)
     {
-        $route = static::formatRoute($route);
-        return $this->handlers[$route] ?? null;
+        return $this->match($request->getMethod(), $request->getUri());
     }
 
-    protected static function formatRoute(string $route): string
+    public function register(string $method, string $path, string $name, mixed $handler)
     {
-        return trim($route, DIRECTORY_SEPARATOR);
+        $this->routes[$method][] = new Route($name, $path, $handler);
+    }
+
+    public static function getPathKey(string $path): string
+    {
+        return preg_replace('/\{[^}]+}/', '*', $path);
     }
 }
